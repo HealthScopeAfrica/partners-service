@@ -7,7 +7,7 @@ import createError, { HttpError } from "http-errors";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
-import mongoose from "mongoose";
+
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
@@ -55,20 +55,6 @@ app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
 	}
 });
 
-// MongoDB connection
-const MONGODB_URI =
-	process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/healthscope"; // placeholder mongodburi
-mongoose
-	.connect(MONGODB_URI)
-	.then(() => {
-		if (process.env.NODE_ENV !== "test") {
-			// eslint-disable-next-line no-console
-			console.log("MongoDB connected");
-		}
-	})
-	.catch((error) => {
-		// eslint-disable-next-line no-console
-		console.error("MongoDB connection error:", error);
-	});
+
 
 export default app;

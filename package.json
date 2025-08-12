@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/bin/www.js",
+    "start": "node dist/bin/www.ts",
     "clean": "rimraf dist || rm -rf dist"
   },
   "dependencies": {
