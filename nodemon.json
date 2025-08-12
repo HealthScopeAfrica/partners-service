@@ -2,5 +2,5 @@
   "watch": ["src", ".env"],
   "ext": "ts,js,json",
   "ignore": ["dist", "node_modules"],
-  "exec": "node --require ts-node/register src/bin/www.ts"
+  "exec": "ts-node src/server.ts"
 }

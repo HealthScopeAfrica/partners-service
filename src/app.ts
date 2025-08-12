@@ -7,12 +7,20 @@ import createError, { HttpError } from "http-errors";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
-
+import errorHandler from "./middlewares/errorHandler";
+import connectDB from './config/db';
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
 
+
 const app = express();
+
+const initDatabase = async () => {
+    await connectDB();
+};
+
+initDatabase();
 
 // View engine setup
 app.set("views", path.join(__dirname, "..", "views"));
@@ -37,23 +45,25 @@ app.use((_req, _res, next) => {
 	next(createError(404));
 });
 
-// Error handler
-app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-	// Set locals, only providing errors in development
-	res.locals.message = err.message;
-	res.locals.error = req.app.get("env") === "development" ? err : {};
+app.use(errorHandler);
 
-	res.status(err.status || 500);
-	const accept = req.headers["accept"] ?? "";
-	if (accept.includes("application/json")) {
-		res.json({ error: res.locals.message, status: err.status || 500 });
-	} else {
-		res.render("error", {
-			message: res.locals.message,
-			error: res.locals.error,
-		});
-	}
-});
+// // Error handler
+// app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
+// 	// Set locals, only providing errors in development
+// 	res.locals.message = err.message;
+// 	res.locals.error = req.app.get("env") === "development" ? err : {};
+
+// 	res.status(err.status || 500);
+// 	const accept = req.headers["accept"] ?? "";
+// 	if (accept.includes("application/json")) {
+// 		res.json({ error: res.locals.message, status: err.status || 500 });
+// 	} else {
+// 		res.render("error", {
+// 			message: res.locals.message,
+// 			error: res.locals.error,
+// 		});
+// 	}
+// });
 
 
 
