@@ -13,5 +13,5 @@ ReaderProfileSchema.index({ accountId: 1 }, { unique: true }); // unique index o
 
 export type ReaderProfile = InferSchemaType<typeof ReaderProfileSchema>;
 export const ReaderProfileModel =
-  models.ReaderProfile || model("ReaderProfile", ReaderProfileSchema);
+  models.ReaderProfile || model("ReaderProfile", ReaderProfileSchema, "readers");
 
