@@ -1,11 +1,12 @@
 {
-  "name": "healthscope",
+  "name": "Healthscope",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "nodemon",
+    "dev": "nodemon --config nodemon.json",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/bin/www.js",
+    "prestart": "npm run build",
+    "start": "node dist/server.js",
     "clean": "rimraf dist || rm -rf dist"
   },
   "dependencies": {
@@ -19,7 +20,8 @@
     "helmet": "^8.1.0",
     "http-errors": "~1.6.3",
     "mongoose": "^8.17.1",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",
