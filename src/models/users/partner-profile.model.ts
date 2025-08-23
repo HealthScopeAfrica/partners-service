@@ -8,7 +8,7 @@ const PartnerProfileSchema = new Schema(
     accountId: {
     type: Schema.Types.ObjectId,
     ref: "Account",
-    required: true,
+    required: false,  // Optional until approved
   }, // null until approved
     organization: {
       name: { type: String, required: true },
