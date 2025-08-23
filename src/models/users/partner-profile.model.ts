@@ -5,7 +5,11 @@ const PARTNER_STATUS = ["pending", "approved", "rejected"] as const;
 
 const PartnerProfileSchema = new Schema(
   {
-    accountId: { type: Schema.Types.ObjectId, ref: "Account", index: true }, // null until approved
+    accountId: {
+    type: Schema.Types.ObjectId,
+    ref: "Account",
+    required: true,
+  }, // null until approved
     organization: {
       name: { type: String, required: true },
       ShortName: { type: String }, //abbreviation

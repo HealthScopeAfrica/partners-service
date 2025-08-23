@@ -1,7 +1,7 @@
 import { Schema, model, models, InferSchemaType } from "mongoose";
 
 const ReaderProfileSchema = new Schema({
-  accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true, index: true },
+  accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true },
 
   // everything below is optional and can be added anytime
   firstName: String,

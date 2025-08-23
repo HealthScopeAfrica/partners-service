@@ -5,6 +5,7 @@ import { AccountModel, type Account } from "../../models/users/account.model";
 import { Types } from "mongoose";
 import { generatePartnerId, generateSecurePassword } from "../../lib/utils";
 import bcrypt from "bcryptjs";
+import createHttpError from "http-errors";
 
 
 /**
@@ -36,7 +37,7 @@ export const approvePartner = async (partnerProfileId: Types.ObjectId): Promise<
   );
   
   if (!partner) {
-    throw new Error('Partner not found');
+    throw createHttpError(404, 'Partner not found');
   }
 
   // Auto-generate secure partner ID and password using utilities
@@ -84,14 +85,14 @@ export const authenticatePartner = async (identifier: string, password: string):
   });
 
   if (!account || !account.passwordHash) {
-    throw new Error('Account not found please register as a partner');
+    throw createHttpError(404, 'Account not found please register as a partner');
   }
 
   // Verify password against hash
   const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
   
   if (!isPasswordValid) {
-    throw new Error('Invalid login parameters please check your credentials');
+    throw createHttpError(401, 'Invalid login parameters please check your credentials');
   }
 
   // Update last login timestamp
@@ -120,7 +121,7 @@ export const resetPartnerPassword = async (identifier: string): Promise<{ accoun
   });
 
   if (!account) {
-    throw new Error('Account not found');
+    throw createHttpError(404, 'Account not found');
   }
 
   // Generate new secure password

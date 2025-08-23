@@ -11,7 +11,8 @@ import errorHandler from "./middlewares/errorHandler";
 import connectDB from './config/db';
 
 import indexRouter from "./routes/index";
-import usersRouter from "./routes/users";
+//import readersRoutes from "./routes/users/readers.routes"; 
+import partnerRoutes from "./routes/users/partner.routes";
 
 
 const app = express();
@@ -37,8 +38,9 @@ app.use(compression());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 // Routes
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/api/v1/", indexRouter);
+//app.use("/api/v1/", readersRoutes);
+app.use("/api/v1", partnerRoutes);
 
 // 404 handler
 app.use((_req, _res, next) => {
