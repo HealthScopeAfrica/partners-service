@@ -47,24 +47,4 @@ app.use((_req, _res, next) => {
 
 app.use(errorHandler);
 
-// // Error handler
-// app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-// 	// Set locals, only providing errors in development
-// 	res.locals.message = err.message;
-// 	res.locals.error = req.app.get("env") === "development" ? err : {};
-
-// 	res.status(err.status || 500);
-// 	const accept = req.headers["accept"] ?? "";
-// 	if (accept.includes("application/json")) {
-// 		res.json({ error: res.locals.message, status: err.status || 500 });
-// 	} else {
-// 		res.render("error", {
-// 			message: res.locals.message,
-// 			error: res.locals.error,
-// 		});
-// 	}
-// });
-
-
-
 export default app;
