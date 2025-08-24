@@ -11,9 +11,7 @@ import errorHandler from "./middlewares/errorHandler";
 import connectDB from './config/db';
 
 import indexRouter from "./routes/index";
-//import readersRoutes from "./routes/users/readers.routes"; 
 import partnerRoutes from "./routes/users/partner.routes";
-
 
 const app = express();
 

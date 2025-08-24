@@ -4,7 +4,7 @@ import { PartnerProfileModel, type PartnerProfile } from "../../models/users/par
 import { AccountModel, type Account } from "../../models/users/account.model";
 import { Types } from "mongoose";
 import { generatePartnerId, generateSecurePassword } from "../../lib/utils";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import createHttpError from "http-errors";
 
 
@@ -28,11 +28,11 @@ export const createPartnerAccount = async (partnerData: PartnerProfile): Promise
 };
 
 // Approve partner and create linked Account (admin function)
-export const approvePartner = async (partnerProfileId: Types.ObjectId): Promise<{ partner: PartnerProfile; account: Account; loginCredentials: { partnerId: string; email: string; password: string } }> => {
+export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, action:string): Promise<{ partner: PartnerProfile; account: Account; loginCredentials: { partnerId: string; email: string; password: string } }> => {
   // First, find and update the PartnerProfile to approved status
   const partner = await PartnerProfileModel.findByIdAndUpdate(
-    partnerProfileId, 
-    { status: 'approved' }, 
+    partnerProfileId,
+    { status: action === 'approve' ? 'approved' : 'rejected' },
     { new: true }
   );
   
@@ -199,4 +199,10 @@ export const uploadPartnerImage = async (id: Types.ObjectId, imagePath: string):
     { 'organization.logoUrl': imagePath }, // Using correct field from your model
     { new: true }
   );
+};
+
+
+//find partner by email or name
+export const findPartnerByEmail = async (email: string, name: string): Promise<PartnerProfile | null> => {
+  return await PartnerProfileModel.findOne({ 'organization.email': email, 'organization.name': name });
 };

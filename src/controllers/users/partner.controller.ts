@@ -1,6 +1,7 @@
 
 import { Request, Response, NextFunction } from "express";
-import { createPartnerAccount } from "../../services/users/partner.service";
+import { Types } from "mongoose";
+import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail } from "../../services/users/partner.service";
 
 /**
  * Create a new partner account
@@ -11,6 +12,11 @@ export const createPartner = async (req: Request, res: Response, next: NextFunct
   try {
     // req.body is already validated by middleware
     const partnerData = req.body;
+    const partnerProfileExist = await findPartnerByEmail(partnerData.organization.email, partnerData.organization.name);
+    if (partnerProfileExist) {
+      res.status(409).json({ success: false, message: 'Partner profile already exists' });
+      return;
+    }
     const newPartner = await createPartnerAccount(partnerData);
     
     res.status(201).json({
@@ -22,3 +28,29 @@ export const createPartner = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 }; 
+
+
+/**
+ * Approve a partner account
+ * Route: PATCH /api/v1/partner/:id/?query=string
+ * /api/v1/partner/:id/?approval=string
+ * string: approve / reject
+ * Access: Admin
+ */
+export const approvePartner = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const partnerProfileId = new Types.ObjectId(req.params.id);
+    const action = req.query.action;
+
+    if (action !== 'approve' && action !== 'reject') {
+      res.status(400).json({ success: false, message: 'Invalid query parameter' });
+      return;
+    }
+
+    const result = await approvePartnerAccount(partnerProfileId, action);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
