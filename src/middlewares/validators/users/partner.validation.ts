@@ -105,13 +105,24 @@ export const partnerIdParamValidator = Joi.object({
 });
 
 /**
- * Status update validation
+ * Approve partner query parameter validation
  */
-export const updatePartnerStatusValidator = Joi.object({
-  status: Joi.string().valid('pending', 'approved', 'rejected').required().messages({
-    'any.only': 'Status must be one of: pending, approved, rejected',
-    'string.empty': 'Status is required',
-    'any.required': 'Status is required'
+export const approvePartnerQueryValidator = Joi.object({
+  action: Joi.string().valid('approve', 'reject').required().messages({
+    'any.only': 'Action must be one of: approve, reject',
+    'string.empty': 'Action is required',
+    'any.required': 'Action is required'
+  })
+});
+
+/**
+ * Partner ID parameter validation for approval
+ */
+export const partnerProfileIdValidator = Joi.object({
+  id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
+    'string.pattern.base': 'Invalid partner profile ID format. Must be a valid ObjectId',
+    'string.empty': 'Partner profile ID is required',
+    'any.required': 'Partner profile ID is required'
   })
 });
 

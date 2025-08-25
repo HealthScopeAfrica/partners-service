@@ -28,17 +28,62 @@ export const createPartnerAccount = async (partnerData: PartnerProfile): Promise
 };
 
 // Approve partner and create linked Account (admin function)
-export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, action:string): Promise<{ partner: PartnerProfile; account: Account; loginCredentials: { partnerId: string; email: string; password: string } }> => {
-  // First, find and update the PartnerProfile to approved status
-  const partner = await PartnerProfileModel.findByIdAndUpdate(
-    partnerProfileId,
-    { status: action === 'approve' ? 'approved' : 'rejected' },
-    { new: true }
-  );
+export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, action: string): Promise<{ partner: PartnerProfile; account?: Account; loginCredentials?: { partnerId: string; email: string; password: string } }> => {
+  // First, find the partner to check current status
+  const existingPartner = await PartnerProfileModel.findById(partnerProfileId);
   
-  if (!partner) {
+  if (!existingPartner) {
     throw createHttpError(404, 'Partner not found');
   }
+
+  // Check if the partner is already in the requested state
+  if (existingPartner.status === action + 'ed' || 
+      (action === 'approve' && existingPartner.status === 'approved') ||
+      (action === 'reject' && existingPartner.status === 'rejected')) {
+    throw createHttpError(400, `Partner is already ${existingPartner.status}`);
+  }
+
+  // For rejection, update status and handle account cleanup if needed
+  if (action === 'reject') {
+    // If partner was previously approved, remove their account
+    if (existingPartner.status === 'approved' && existingPartner.accountId) {
+      await AccountModel.findByIdAndDelete(existingPartner.accountId);
+    }
+    
+    const rejectedPartner = await PartnerProfileModel.findByIdAndUpdate(
+      partnerProfileId,
+      { status: 'rejected', accountId: null },
+      { new: true }
+    );
+    return { partner: rejectedPartner! };
+  }
+
+  // For approval, handle different scenarios
+  let account: Account | undefined;
+  let loginCredentials: { partnerId: string; email: string; password: string } | undefined;
+
+  // Check if partner was previously approved and still has an account
+  if (existingPartner.status === 'approved' && existingPartner.accountId) {
+    // Partner is already approved with an existing account
+    const existingAccount = await AccountModel.findById(existingPartner.accountId);
+    if (existingAccount) {
+      throw createHttpError(400, 'Partner is already approved with an active account');
+    }
+  }
+
+  // Check for duplicate accounts by email (for new approvals or re-approvals)
+  // Only check for duplicate accounts, not duplicate partners with same email
+  const duplicateAccount = await AccountModel.findOne({ email: existingPartner.organization.email });
+  if (duplicateAccount) {
+    throw createHttpError(409, 'An account with this email already exists. Cannot approve partner.');
+  }
+
+  // Update partner status to approved
+  const partner = await PartnerProfileModel.findByIdAndUpdate(
+    partnerProfileId,
+    { status: 'approved' },
+    { new: true }
+  );
 
   // Auto-generate secure partner ID and password using utilities
   const generatedPartnerId = await generatePartnerId();
@@ -56,14 +101,14 @@ export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, ac
     passwordHash: passwordHash, // Now properly hashed
     status: 'enabled'
   });
-  const account = await newAccount.save();
+  account = await newAccount.save();
 
   // Link the account to the partner profile
-  partner.accountId = account._id as Types.ObjectId;
+  partner.accountId = (account as any)._id as Types.ObjectId;
   await partner.save();
 
   // Return login credentials to send via email (password is plain text for email)
-  const loginCredentials = {
+  loginCredentials = {
     partnerId: generatedPartnerId,
     email: partner.organization.email,
     password: tempPassword // Plain text for email - hash is stored in DB
@@ -206,3 +251,5 @@ export const uploadPartnerImage = async (id: Types.ObjectId, imagePath: string):
 export const findPartnerByEmail = async (email: string, name: string): Promise<PartnerProfile | null> => {
   return await PartnerProfileModel.findOne({ 'organization.email': email, 'organization.name': name });
 };
+
+

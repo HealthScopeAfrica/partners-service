@@ -1,7 +1,7 @@
 import express from "express";
-import { createPartner } from "../../controllers/users/partner.controller";
+import { approvePartner, createPartner } from "../../controllers/users/partner.controller";
 import { validate } from "../../middlewares/validators/index";
-import { createPartnerValidator } from "../../middlewares/validators/users/partner.validation";
+import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator } from "../../middlewares/validators/users/partner.validation";
 
 const router = express.Router();
 
@@ -9,6 +9,13 @@ const router = express.Router();
 router.post("/partner", 
   validate(createPartnerValidator),
   createPartner
+);
+
+// In your partner routes
+router.patch("/partner/:id", 
+  validate(partnerProfileIdValidator, 'params'),    // Validate :id parameter
+  validate(approvePartnerQueryValidator, 'query'),  // Validate ?action= query
+  approvePartner
 );
 
 export default router;

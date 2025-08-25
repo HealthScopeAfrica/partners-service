@@ -29,7 +29,10 @@ export const validate = (
     }
 
     // Replace the original data with validated/sanitized data
-    req[property] = value;
+    // Note: Don't replace req.query as it's read-only, just validate
+    if (property !== 'query') {
+      req[property] = value;
+    }
     next();
   };
 };
