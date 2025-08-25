@@ -15,4 +15,4 @@ Partners act as **gatekeepers** for trusted health information within the Health
   - Download engagement and impact reports for data-driven insights.
 
 ## Why It Matters
-The Partner Service ensures that HealthScope maintains a **credible, scalable, and locally relevant ecosystem** of verified health information. By empowering organizations to manage their contributor networks, HealthScope builds accountability and strengthens trust across Africa’s digital health landscape..
+The Partner Service ensures that HealthScope maintains a **credible, scalable, and locally relevant ecosystem** of verified health information. By empowering organizations to manage their contributor networks, HealthScope builds accountability and strengthens trust across Africa’s digital health landscape.
