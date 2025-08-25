@@ -4,6 +4,7 @@ import { PartnerProfileModel, type PartnerProfile } from "../../models/users/par
 import { AccountModel, type Account } from "../../models/users/account.model";
 import { Types } from "mongoose";
 import { generatePartnerId, generateSecurePassword } from "../../lib/utils";
+import { generateTokenPair, TokenPayload } from "../../lib/jwt";
 import bcrypt from "bcrypt";
 import createHttpError from "http-errors";
 
@@ -28,7 +29,11 @@ export const createPartnerAccount = async (partnerData: PartnerProfile): Promise
 };
 
 // Approve partner and create linked Account (admin function)
-export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, action: string): Promise<{ partner: PartnerProfile; account?: Account; loginCredentials?: { partnerId: string; email: string; password: string } }> => {
+export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, action: string): Promise<{ 
+  partner: PartnerProfile; 
+  account?: Account; 
+  loginCredentials?: { partnerId: string; email: string; password: string };
+}> => {
   // First, find the partner to check current status
   const existingPartner = await PartnerProfileModel.findById(partnerProfileId);
   
