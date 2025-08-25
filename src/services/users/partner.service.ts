@@ -4,7 +4,6 @@ import { PartnerProfileModel, type PartnerProfile } from "../../models/users/par
 import { AccountModel, type Account } from "../../models/users/account.model";
 import { Types } from "mongoose";
 import { generatePartnerId, generateSecurePassword } from "../../lib/utils";
-import { generateTokenPair, TokenPayload } from "../../lib/jwt";
 import bcrypt from "bcrypt";
 import createHttpError from "http-errors";
 
