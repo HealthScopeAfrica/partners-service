@@ -143,9 +143,27 @@ export const authenticatePartner = async (identifier: string, password: string):
 };
 
 
+/**
+ * Suspend partner
+ *  Route: PATCH /api/v1/partner/:id?query=boolean
+ * /api/v1/partner/:id?suspend=true
+ * string: true/false
+ * Access: Admin
+ */
+
 // suspendPartnerAccount
-export const suspendPartnerAccount = async (id: Types.ObjectId): Promise<PartnerProfile | null> => {
-  return await PartnerProfileModel.findByIdAndUpdate(id, { isSuspended: true }, { new: true });
+export const suspendPartnerAccount = async (id: Types.ObjectId, suspend: boolean): Promise<PartnerProfile | null> => {
+  const result = await PartnerProfileModel.findByIdAndUpdate(id, { isSuspended: suspend }, { new: true });
+  if(!result) {
+    throw createHttpError(404, 'Partner to suspend not found, may have been deleted');
+  }
+  return result;
+};
+
+//check suspended status
+export const isPartnerSuspended = async (id: Types.ObjectId): Promise<boolean> => {
+  const partner = await PartnerProfileModel.findById(id);
+  return partner?.isSuspended ?? false;
 };
 
 // Verify password only (helper function)

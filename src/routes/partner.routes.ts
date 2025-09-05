@@ -1,7 +1,7 @@
 import express from "express";
-import { approvePartner, createPartner } from "../controllers/partner.controller";
+import { approvePartner, createPartner, suspendPartner } from "../controllers/partner.controller";
 import { validate } from "../middlewares/validators/index";
-import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator } from "../middlewares/validators/partner.validation";
+import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator, suspendReinstatePartnerQueryValidator } from "../middlewares/validators/partner.validation";
 
 const router = express.Router();
 
@@ -11,11 +11,19 @@ router.post("/partner",
   createPartner
 );
 
-// In your partner routes
+// PATCH /api/v1/partner/:id - Approve or reject partner account
 router.patch("/partner/:id", 
   validate(partnerProfileIdValidator, 'params'),    // Validate :id parameter
   validate(approvePartnerQueryValidator, 'query'),  // Validate ?action= query
   approvePartner
+);
+
+
+// PATCH /api/v1/partner/:id - Suspend or reinstate partner account
+router.patch("/partner/:id", 
+  validate(partnerProfileIdValidator, 'params'),    // Validate :id parameter
+  validate(suspendReinstatePartnerQueryValidator, 'query'),  // Validate ?suspend= query
+  suspendPartner
 );
 
 export default router;

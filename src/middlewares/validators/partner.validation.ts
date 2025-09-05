@@ -127,6 +127,15 @@ export const partnerProfileIdValidator = Joi.object({
 });
 
 /**
+ * Suspend partner query parameter validation
+ */
+export const suspendReinstatePartnerQueryValidator = Joi.object({
+  suspend: Joi.boolean().required().messages({
+    'boolean.base': 'Suspend must be a boolean value',
+    'any.required': 'Suspend parameter is required'
+});
+
+/**
  * Tier update validation  
  */
 export const updatePartnerTierValidator = Joi.object({

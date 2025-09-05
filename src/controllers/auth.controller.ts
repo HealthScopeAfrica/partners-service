@@ -52,11 +52,7 @@ export const login = async (
     if (!partnerProfile) {
       throw createHttpError(404, "Partner profile not found");
     }
-
-    const isSuspended = await isPartnerSuspended(partnerProfile._id);
-    if (isSuspended) {
-      throw createHttpError(403, "Your account has been suspended, please contact Admin to restore account");
-    }
+  
 
     // Generate JWT tokens using partner profile ID (not account ID)
     const tokenPayload: Omit<TokenPayload, "iat" | "exp"> = {

@@ -1,7 +1,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
-import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail } from "../services/users/partner.service";
+import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail, suspendPartnerAccount } from "../services/users/partner.service";
 import {sendEmail} from "../lib/utils";
 import {approvalMail} from "../emails/approvalMail";
 import {rejectionMail} from "../emails/rejectionMail";
@@ -30,6 +30,9 @@ export const createPartner = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 }; 
+
+
+
 
 
 /**
@@ -76,3 +79,21 @@ export const approvePartner = async (req: Request, res: Response, next: NextFunc
 }
 
 
+/**
+ * Suspend partner
+ *  Route: PATCH /api/v1/partner/:id?query=string
+ * /api/v1/partner/:id?suspend=true
+ * string: true/false
+ * Access: Admin
+ */
+
+export const suspendPartner = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const accountId = new Types.ObjectId(req.params.id);
+    const suspend = req.query.suspend === 'true'; // convert string to boolean
+    const result = await suspendPartnerAccount(accountId, suspend);
+    res.status(200).json({ success: true, message: suspend ? 'Partner account suspended successfully' : 'Partner account reinstated successfully' });
+  } catch (error) {
+    next(error);
+  }
+};

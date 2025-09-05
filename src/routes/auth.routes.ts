@@ -7,7 +7,7 @@ import {
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validators/index";
 import { loginValidator, refreshTokenValidator } from "../middlewares/validators/auth.validation";
-import { authenticate } from "../middlewares/auth";
+import { authenticate } from "../middlewares/auth.middleware";
 
 /**
  * AUTH ROUTES
