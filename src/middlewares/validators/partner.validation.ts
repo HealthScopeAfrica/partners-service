@@ -108,10 +108,10 @@ export const partnerIdParamValidator = Joi.object({
  * Approve partner query parameter validation
  */
 export const approvePartnerQueryValidator = Joi.object({
-  action: Joi.string().valid('approve', 'reject').required().messages({
-    'any.only': 'Action must be one of: approve, reject',
-    'string.empty': 'Action is required',
-    'any.required': 'Action is required'
+  decision: Joi.string().valid('approve', 'reject').required().messages({
+    'any.only': 'Decision must be one of: approve, reject',
+    'string.empty': 'Decision is required',
+    'any.required': 'Decision is required'
   })
 });
 

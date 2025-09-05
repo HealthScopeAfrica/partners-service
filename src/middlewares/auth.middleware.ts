@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import { verifyToken, extractTokenFromHeader, TokenPayload } from '../lib/jwt';
+import { isPartnerSuspended } from '../services/users/partner.service';
+import { Types } from 'mongoose';
 
 /**
  * JWT AUTHENTICATION MIDDLEWARE
@@ -40,7 +42,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     
     // Add user info to request
     req.user = payload;
-    
+    const { userId } = req.user;
+  const isSuspended = await isPartnerSuspended(new Types.ObjectId(userId));
+  if (isSuspended) {
+    throw createHttpError(403, 'Your account has been suspended, please contact Admin to restore account');
+  }
+
     next();
   } catch (error: any) {
     if (error.message === 'Token has expired') {

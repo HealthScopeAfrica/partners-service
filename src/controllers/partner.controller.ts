@@ -2,7 +2,9 @@
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
 import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail } from "../services/users/partner.service";
-
+import {sendEmail} from "../lib/utils";
+import {approvalMail} from "../emails/approvalMail";
+import {rejectionMail} from "../emails/rejectionMail";
 /**
  * Create a new partner account
  * Route: POST /api/v1/partner
@@ -40,28 +42,37 @@ export const createPartner = async (req: Request, res: Response, next: NextFunct
 export const approvePartner = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const partnerProfileId = new Types.ObjectId(req.params.id);
-    const action = req.query.action;
-    // const role = req.user.role;
+    const decision = req.query.decision;
+    const role = req.user?.role as string;
 
-    // if (role !== 'admin') {
-    //   res.status(403).json({ success: false, message: 'You do not have permission to perform this action' });
-    //   return;
-    // }
+    if (!req.user || role !== 'admin') {
+      res.status(403).json({ success: false, message: 'You do not have permission to perform this action' });
+      return;
+    }
 
-    if (action !== 'approve' && action !== 'reject') {
+    if (decision !== 'approve' && decision !== 'reject') {
       res.status(400).json({ success: false, message: 'Invalid query parameter, must be approve or reject' });
       return;
     }
-    const result = await approvePartnerAccount(partnerProfileId, action);
-    if (action === 'approve') {
-      res.status(200).json({ success: true, data: result });
+    const result = await approvePartnerAccount(partnerProfileId, decision);
+    const { partner, account, loginCredentials } = result;
+    const recipient = partner?.organization?.email;
+    const subject = decision === 'approve' ? 'Your partner account has been approved' : 'Your partner account has been rejected';
+    const body = decision === 'approve' ? approvalMail(partner?.organization?.name, loginCredentials?.partnerId, loginCredentials?.password) : rejectionMail(partner?.organization?.name);
+ if (recipient) {
+    if (decision === 'approve') {
+      // Send email with login credentials
+        await sendEmail(subject, body, recipient);
+      
+      res.status(200).json({ success: true, data: { partner, account }});
     } else {
-      res.status(200).json({ success: true, message: 'Partner account rejected successfully' });
-    }
+       await sendEmail(subject, body, recipient);
+      res.status(200).json({ success: false, message: 'Partner account rejected successfully' });
+    }}
+    
   } catch (error) {
     next(error);
   }
 }
-
 
 

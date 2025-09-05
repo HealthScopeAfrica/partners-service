@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { authenticatePartner } from "../services/users/partner.service";
+import { authenticatePartner, isPartnerSuspended } from "../services/users/partner.service";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -53,6 +53,11 @@ export const login = async (
       throw createHttpError(404, "Partner profile not found");
     }
 
+    const isSuspended = await isPartnerSuspended(partnerProfile._id);
+    if (isSuspended) {
+      throw createHttpError(403, "Your account has been suspended, please contact Admin to restore account");
+    }
+
     // Generate JWT tokens using partner profile ID (not account ID)
     const tokenPayload: Omit<TokenPayload, "iat" | "exp"> = {
       userId: (partnerProfile as any)._id.toString(), // Use partner profile ID
@@ -65,11 +70,11 @@ export const login = async (
     const refreshToken = generateRefreshToken(tokenPayload);
 
     // Set refresh token as HTTP-only cookie
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("partner_refresh_Token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // HTTPS in production
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
 
     // Return access token and partner profile data
@@ -136,7 +141,7 @@ export const refreshToken = async (
       success: true,
       message: "Token refreshed successfully",
       data: {
-        accessToken: newAccessToken,
+        accessToken: newAccessToken
       },
     });
   } catch (error) {

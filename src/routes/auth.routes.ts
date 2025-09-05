@@ -30,7 +30,7 @@ router.post("/auth/login", validate(loginValidator, "body"), login);
  * Refresh access token using refresh token from cookie
  * No body validation needed - token comes from HTTP-only cookie
  */
-router.post("/auth/refresh", refreshToken);
+router.post("/auth/refresh-token", refreshToken);
 
 /**
  * POST /api/v1/auth/logout
