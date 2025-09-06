@@ -39,11 +39,5 @@ router.post("/auth/refresh-token", refreshToken);
  */
 router.post("/auth/logout", authenticate,  logout);
 
-/**
- * GET /api/v1/auth/me
- * Get current user profile
- * Headers: Authorization: Bearer <token>
- */
-router.get("/partner", authenticate, authorize('partner'), getCurrentUser);
 
 export default router;
