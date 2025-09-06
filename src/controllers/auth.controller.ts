@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { authenticatePartner, isPartnerSuspended } from "../services/users/partner.service";
+import {
+  authenticatePartner,
+  isPartnerSuspended,
+} from "../services/users/partner.service";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -37,6 +40,15 @@ export const login = async (
       throw createHttpError(400, "Email/Partner ID and password are required");
     }
 
+    const isSuspended = await isPartnerSuspended(identifier);
+    if (isSuspended) {
+      // Block login and return suspension message
+      throw createHttpError(
+        403,
+        "Your account has been suspended, please contact suppor."
+      );
+    }
+
     // Authenticate partner
     const account = await authenticatePartner(identifier, password);
 
@@ -52,7 +64,6 @@ export const login = async (
     if (!partnerProfile) {
       throw createHttpError(404, "Partner profile not found");
     }
-  
 
     // Generate JWT tokens using partner profile ID (not account ID)
     const tokenPayload: Omit<TokenPayload, "iat" | "exp"> = {
@@ -66,7 +77,7 @@ export const login = async (
     const refreshToken = generateRefreshToken(tokenPayload);
 
     // Set refresh token as HTTP-only cookie
-    res.cookie("partner_refresh_Token", refreshToken, {
+    res.cookie("partner_refresh_token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // HTTPS in production
       sameSite: "strict",
@@ -78,7 +89,7 @@ export const login = async (
       success: true,
       message: "Login successful",
       data: {
-        accessToken
+        accessToken,
       },
     });
   } catch (error) {
@@ -137,14 +148,13 @@ export const refreshToken = async (
       success: true,
       message: "Token refreshed successfully",
       data: {
-        accessToken: newAccessToken
+        accessToken: newAccessToken,
       },
     });
   } catch (error) {
     next(error);
   }
 };
-
 
 /**
  * Logout endpoint
@@ -200,7 +210,7 @@ export const getCurrentUser = async (
     res.status(200).json({
       success: true,
       data: {
-        partner: partnerProfile
+        partner: partnerProfile,
       },
     });
   } catch (error) {

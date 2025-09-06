@@ -7,7 +7,7 @@ import {
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validators/index";
 import { loginValidator, refreshTokenValidator } from "../middlewares/validators/auth.validation";
-import { authenticate } from "../middlewares/auth.middleware";
+import { authenticate, authorize, checkPartnerSuspension } from "../middlewares/auth.middleware";
 
 /**
  * AUTH ROUTES
@@ -44,6 +44,6 @@ router.post("/auth/logout", authenticate,  logout);
  * Get current user profile
  * Headers: Authorization: Bearer <token>
  */
-router.get("/partner", authenticate, getCurrentUser);
+router.get("/partner", authenticate, authorize('partner'), getCurrentUser);
 
 export default router;

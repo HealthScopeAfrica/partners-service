@@ -6,10 +6,10 @@
 
 import { AccountModel } from "../models/users/account.model";
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 // import AWS from 'aws-sdk'; // Uncomment when ready for SES
-import dotenv from "dotenv";
 import createHttpError from "http-errors";
-dotenv.config();
+
 
 /**
  * Generate unique partner ID with format: PTR-XXXXXXXXX
@@ -71,23 +71,19 @@ export const generateSecurePassword = (): string => {
 }
 
 /**
- * Send an email using Resend (for non-production) or AWS SES (for production)
+ * Send an email using Resend (for production) or Nodemailer (for development)
  * @param subject - Email subject
  * @param content - Email HTML content
  * @param recipient - Recipient email address
  */
+
 export async function sendEmail(
   subject: string,
   body: string,
   recipient: string
 ): Promise<void> {
   if (process.env.NODE_ENV === "production") {
-    // TODO: Implement AWS SES logic here when ready
-    // Example stub:
-    // const ses = new AWS.SES({ region: 'us-east-1' });
-    // await ses.sendEmail({ ... }).promise();
-    throw createHttpError(501, "AWS SES integration not yet implemented.");
-  } else {
+    // Use Resend in production
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_BOX as string,
@@ -95,12 +91,32 @@ export async function sendEmail(
       subject,
       html: body,
     });
-
     if (error) {
-      throw createHttpError(500, error.message || "Failed to send email");
+      console.error("Resend error:", error);
+      throw createHttpError(500, error || "Failed to send email");
     }
-
     console.log({ data });
+  } else {
+    // Use Nodemailer + Gmail SMTP in development
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_BOX,
+        pass: process.env.MAILER_PASS,
+      },
+    });
+    try {
+      const info = await transporter.sendMail({
+        from: process.env.EMAIL_BOX,
+        to: recipient,
+        subject,
+        html: body,
+      });
+      console.log("Nodemailer info:", info);
+    } catch (error) {
+      console.error("Nodemailer error:", error);
+      throw createHttpError(500, "Failed to send email via Gmail SMTP");
+    }
   }
 }
 

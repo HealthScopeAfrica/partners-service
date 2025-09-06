@@ -9,10 +9,12 @@ import helmet from "helmet";
 import compression from "compression";
 import errorHandler from "./middlewares/errorHandler";
 import connectDB from './config/db';
-
 import indexRouter from "./routes/index";
 import authRouter from "./routes/auth.routes";
 import partnerRoutes from "./routes/partner.routes";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 

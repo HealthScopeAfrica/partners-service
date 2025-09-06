@@ -153,17 +153,19 @@ export const authenticatePartner = async (identifier: string, password: string):
 
 // suspendPartnerAccount
 export const suspendPartnerAccount = async (id: Types.ObjectId, suspend: boolean): Promise<PartnerProfile | null> => {
-  const result = await PartnerProfileModel.findByIdAndUpdate(id, { isSuspended: suspend }, { new: true });
-  if(!result) {
-    throw createHttpError(404, 'Partner to suspend not found, may have been deleted');
-  }
-  return result;
+  return await PartnerProfileModel.findByIdAndUpdate(id, { isSuspended: suspend }, { new: true });
 };
 
+
 //check suspended status
-export const isPartnerSuspended = async (id: Types.ObjectId): Promise<boolean> => {
-  const partner = await PartnerProfileModel.findById(id);
-  return partner?.isSuspended ?? false;
+export const isPartnerSuspended = async (identifier: string): Promise<boolean> => {
+  const partner = await PartnerProfileModel.findOne({
+    $or: [
+      { "organization.email": identifier.toLowerCase() },
+      { partnerId: identifier.toLowerCase() }
+    ]
+  });
+  return partner?.isSuspended ?? false; 
 };
 
 // Verify password only (helper function)

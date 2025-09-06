@@ -20,8 +20,7 @@ declare global {
 }
 
 /**
- * Authentication middleware - Verifies JWT Bearer token
- * Adds partner info to req.user if token is valid
+ * 1. AUTHENTICATE: Verifies JWT and attaches req.user (any role)
  */
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -35,12 +34,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     // Verify token and extract payload
     const payload = verifyToken(token);
     
-    // Ensure it's a partner token
-    if (payload.role !== 'partner') {
-      throw createHttpError(403, 'Partner access required');
-    }
-    
-    // Add user info to request
     req.user = payload;
   
     next();
@@ -52,5 +45,35 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     } else {
       next(createHttpError(401, 'Authentication failed'));
     }
+  }
+};
+
+/**
+ * 2. AUTHORIZE: Restricts access by role
+ * Usage: authorize('partner'), authorize('admin')
+ */
+export function authorize(role: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || req.user.role !== role) {
+      return res.status(403).json({ success: false, message: 'You do not have permission to perform this action' });
+    }
+    next();
+  };
+}
+
+/**
+ * 3. checkPartnerSuspension: Blocks suspended partners (for partner routes only)
+ */
+export const checkPartnerSuspension = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (req.user?.role !== 'partner') return next(); // Only check for partners
+    const { email } = req.user;
+    const isSuspended = await isPartnerSuspended(email);
+    if (isSuspended) {
+      throw createHttpError(403, "Your account has been suspended, please contact support.");
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
 };

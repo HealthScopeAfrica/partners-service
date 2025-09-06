@@ -34,7 +34,7 @@ const PartnerProfileSchema = new Schema(
     },
 
     tier: { type: String, enum: TIERS, default: "standard" },
-    isSuspended:{type:boolean, default:false},
+    isSuspended:{type:Boolean, default:false},
     status: {
       type: String,
       enum: PARTNER_STATUS,

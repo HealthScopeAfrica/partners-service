@@ -133,6 +133,7 @@ export const suspendReinstatePartnerQueryValidator = Joi.object({
   suspend: Joi.boolean().required().messages({
     'boolean.base': 'Suspend must be a boolean value',
     'any.required': 'Suspend parameter is required'
+  })
 });
 
 /**
