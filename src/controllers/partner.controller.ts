@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
 import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail, suspendPartnerAccount } from "../services/users/partner.service";
+import { getPartners } from "../services/users/partner-query.service";
 import {sendEmail} from "../lib/utils";
 import {approvalMail} from "../emails/approvalMail";
 import {rejectionMail} from "../emails/rejectionMail";
@@ -137,6 +138,7 @@ export const getCurrentPartner = async (
 /**
  * Get all partner profiles
  * GET /api/v1/partners
+ * GET /api/v1/partners?search=&type=&status=&tier=&country=&page=&limit=&sort=&order=
  */
 export const getAllPartners = async (
   req: Request,
@@ -144,17 +146,35 @@ export const getAllPartners = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const partners = await PartnerProfileModel.find();
-    if (!partners || partners.length === 0) {
-      res.status(404).json({ success: false, message: "No partners found" });
-      return;
-    }
+    // Pass query params to service
+    const {
+      search = "",
+      type,
+      status,
+      tier,
+      country,
+      page = 1,
+      limit = 20,
+      sort = "createdAt",
+      order = "desc"
+    } = req.query;
+
+    const result = await getPartners({
+      search: search as string,
+      type: type as string,
+      status: status as string,
+      tier: tier as string,
+      country: country as string,
+      page: Number(page),
+      limit: Number(limit),
+      sort: sort as string,
+      order: order as string
+    });
+
     res.status(200).json({
       success: true,
-      message: "All partners retrieved successfully",
-      data: {
-        partners,
-      },
+      message: "Partners retrieved successfully",
+      data: result
     });
   } catch (error) {
     next(error);
