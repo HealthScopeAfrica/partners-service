@@ -109,7 +109,7 @@ export const refreshToken = async (
 ): Promise<void> => {
   try {
     // Get refresh token from cookie instead of body
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.partner_refresh_token;
 
     if (!refreshToken) {
       throw createHttpError(401, "Refresh token not found");
@@ -170,7 +170,7 @@ export const logout = async (
 ): Promise<void> => {
   try {
     // Clear the refresh token cookie
-    res.clearCookie("refreshToken", {
+    res.clearCookie("partner_refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -179,39 +179,6 @@ export const logout = async (
     res.status(200).json({
       success: true,
       message: "Logged out successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get current user profile
- * GET /api/v1/auth/partner
- * Headers: Authorization: Bearer <token>
- */
-export const getCurrentUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (!req.user) {
-      throw createHttpError(401, "Authentication required");
-    }
-
-    // Get partner profile (since userId is now partner profile ID)
-    const partnerProfile = await PartnerProfileModel.findById(req.user.userId);
-
-    if (!partnerProfile) {
-      throw createHttpError(404, "Partner profile not found");
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        partner: partnerProfile,
-      },
     });
   } catch (error) {
     next(error);

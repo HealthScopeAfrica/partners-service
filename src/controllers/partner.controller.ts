@@ -5,6 +5,8 @@ import {sendEmail} from "../lib/utils";
 import {approvalMail} from "../emails/approvalMail";
 import {rejectionMail} from "../emails/rejectionMail";
 import { profileCreationMail } from "../emails/profileCreationMail";
+import createHttpError from "http-errors";
+import { PartnerProfileModel } from "../models/users/partner-profile.model";
 /**
  * Create a new partner account
  * Route: POST /api/v1/partner
@@ -96,6 +98,37 @@ export const suspendPartner = async (req: Request, res: Response, next: NextFunc
      return;
    }
     res.status(200).json({ success: true, message: suspend ? 'Partner account suspended successfully' : 'Partner account reinstated successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get current user profile
+ * GET /api/v1/auth/partner
+ * Headers: Authorization: Bearer <token>
+ */
+export const getCurrentPartner = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Get partner profile (userId is partner profile ID)
+    const partnerProfile = await PartnerProfileModel.findById(req?.user?.userId);
+
+    if (!partnerProfile) {
+      res.status(404).json({ success: false, message: "Partner profile not found" });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Authenticated partner profile retrieved successfully",
+      data: {
+        partner: partnerProfile,
+      },
+    });
   } catch (error) {
     next(error);
   }

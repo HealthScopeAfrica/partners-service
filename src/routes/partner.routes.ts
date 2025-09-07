@@ -3,7 +3,7 @@ import { approvePartner, createPartner, suspendPartner } from "../controllers/pa
 import { validate } from "../middlewares/validators/index";
 import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator, suspendReinstatePartnerQueryValidator } from "../middlewares/validators/partner.validation";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
-import { getCurrentUser } from "../controllers/auth.controller";
+import { getCurrentPartner } from "../controllers/partner.controller";
 
 const router = express.Router();
 
@@ -36,6 +36,6 @@ router.patch("/partner/:id/access",
  * Get current user profile
  * Headers: Authorization: Bearer <token>
  */
-router.get("/partner", authenticate, authorize('partner'), getCurrentUser);
+router.get("/partner", authenticate, authorize('partner'), getCurrentPartner);
 
 export default router;

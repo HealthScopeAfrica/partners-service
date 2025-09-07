@@ -3,7 +3,6 @@ import {
   login,
   refreshToken,
   logout,
-  getCurrentUser,
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validators/index";
 import { loginValidator, refreshTokenValidator } from "../middlewares/validators/auth.validation";
