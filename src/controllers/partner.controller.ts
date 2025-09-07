@@ -105,8 +105,7 @@ export const suspendPartner = async (req: Request, res: Response, next: NextFunc
 
 /**
  * Get current user profile
- * GET /api/v1/auth/partner
- * Headers: Authorization: Bearer <token>
+ * GET /api/v1/partner
  */
 export const getCurrentPartner = async (
   req: Request,
@@ -127,6 +126,34 @@ export const getCurrentPartner = async (
       message: "Authenticated partner profile retrieved successfully",
       data: {
         partner: partnerProfile,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+/**
+ * Get all partner profiles
+ * GET /api/v1/partners
+ */
+export const getAllPartners = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const partners = await PartnerProfileModel.find();
+    if (!partners || partners.length === 0) {
+      res.status(404).json({ success: false, message: "No partners found" });
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      message: "All partners retrieved successfully",
+      data: {
+        partners,
       },
     });
   } catch (error) {
