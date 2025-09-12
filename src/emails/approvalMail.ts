@@ -16,7 +16,11 @@ export const approvalMail = (orgName?: string, partnerId?: string, password?: st
       </div>
       <a href="${process.env.PARTNER_FRONTEND_URL}" style="display: inline-block; background: #00b894; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500;">Log In</a>
       <p style="margin-top: 24px; color: #222;">For your security, please change your password after your first login.</p>
-      <p style="margin-top: 32px; font-size: 13px; color: #888;">If you have any questions, reply to this email.</p>
+<p style="margin-top: 32px; font-size: 13px; color: #888;">
+        Thank you,  
+        <br />
+        The HealthScope Team
+      </p>
     </div>
   </body>
 </html>

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
-import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail, suspendPartnerAccount } from "../services/users/partner.service";
-import { getPartners } from "../services/users/partner-query.service";
+import { approvePartnerAccount, createPartnerAccount, findPartnerByEmail, suspendPartnerAccount } from "../services/partner-account.management.service";
+import { getPartners } from "../services/partner-query.service";
 import {sendEmail} from "../lib/utils";
 import {approvalMail} from "../emails/approvalMail";
 import {rejectionMail} from "../emails/rejectionMail";

@@ -67,7 +67,7 @@ export const changePasswordValidator = Joi.object({
 });
 
 // Reset password request validation
-export const resetPasswordRequestValidator = Joi.object({
+export const requestPasswordResetValidator = Joi.object({
   identifier: Joi.string()
     .required()
     .messages({
@@ -75,3 +75,35 @@ export const resetPasswordRequestValidator = Joi.object({
       'string.empty': 'Email or Partner ID cannot be empty'
     })
 });
+
+// Set new password validation
+export const setNewPasswordValidator = Joi.object({
+  email: Joi.string().email()
+    .required()
+    .messages({
+      'any.required': 'Email is required',
+      'string.empty': 'Email cannot be empty'
+    }),
+
+  token: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Token is required',
+      'string.empty': 'Token cannot be empty'
+    }),
+
+  newPassword: Joi.string()
+    .min(8)
+    .max(64)
+    .pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/)
+    .required()
+    .messages({
+      'any.required': 'New password is required',
+      'string.empty': 'New password cannot be empty',
+      'string.min': 'New password must be at least 8 characters long',
+      'string.max': 'New password must be less than 64 characters long',
+      'string.pattern.base': 'Password must include uppercase, lowercase, number, and special character'
+    })
+});
+
+    

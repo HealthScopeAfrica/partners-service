@@ -1,8 +1,7 @@
-import { AccountModel } from "../../models/users/account.model";
-import { PartnerProfileModel } from "../../models/users/partner-profile.model";
+import { AccountModel } from "../models/users/account.model";
+import { PartnerProfileModel } from "../models/users/partner-profile.model";
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
-import { generateSecurePassword } from "../../lib/utils";
 
 // verify partner credentials
 export const authenticatePartner = async (identifier: string, password: string): Promise<any> => {
@@ -27,14 +26,18 @@ export const authenticatePartner = async (identifier: string, password: string):
 };
 
 
-// verify partner password
-export const verifyPartnerPassword = async (identifier: string, password: string): Promise<boolean> => {
-  const account = await authenticatePartner(identifier, password);
-  return account !== null;
+//get partner name from partner profile
+const getPartnerName = async (accountId: string): Promise<string> => {
+   const profile = await PartnerProfileModel.findOne({ accountId: accountId });
+  const partnerName = profile?.organization?.name ?? 'Partner';
+  return partnerName;
 };
 
-// reset partner password
-export const resetPartnerPassword = async (identifier: string): Promise<{ account: any; newPassword: string } | null> => {
+
+// Verify password reset request: check account exists and return info for token generation
+export const validatePartnerAccount = async (
+  identifier: string
+): Promise<{ userId: string; email: string; partnerName: string } | null> => {
   const account = await AccountModel.findOne({
     $or: [
       { email: identifier.toLowerCase() },
@@ -43,19 +46,42 @@ export const resetPartnerPassword = async (identifier: string): Promise<{ accoun
     role: 'partner',
     status: 'enabled'
   });
+
   if (!account) {
-    throw createHttpError(404, 'Account not found');
+    return null;
   }
-  const newPassword = generateSecurePassword();
+
+  const partnerName = await getPartnerName(account._id.toString());
+
+  return {
+    userId: account._id.toString(),
+    email: account.email,
+    partnerName
+  };
+};
+
+
+
+
+// Reset partner password using userId and email (extra validation)
+export const resetPartnerPassword = async (
+  userId: string,
+  email: string,
+  newPassword: string
+): Promise<{ account: any; newPassword: string; partnerName: string } | null> => {
+  const account = await AccountModel.findOne({ _id: userId, email });
+  if (!account) {
+    return null;
+  }
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(newPassword, saltRounds);
-  const updatedAccount = await AccountModel.findByIdAndUpdate(
-    account._id, 
-    { passwordHash },
-    { new: true }
-  );
-  return { account: updatedAccount, newPassword };
+  const updatedAccount = await AccountModel.findByIdAndUpdate(account._id, { passwordHash }, { new: true });
+  const partnerName = await getPartnerName(account._id.toString());
+  return { account: updatedAccount, newPassword, partnerName };
 };
+
+
+
 
 
 // change partner password

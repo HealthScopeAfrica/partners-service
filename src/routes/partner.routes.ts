@@ -34,17 +34,16 @@ router.patch("/partner/:id/access",
 /**
  * GET /api/v1/me
  * Get current user profile
- * Headers: Authorization: Bearer <token>
  */
-      router.get("/partner", authenticate, authorize('partner'), getCurrentPartner);
+router.get("/partner", authenticate, authorize('partner'), getCurrentPartner);
 
 
 /**
  * GET /api/v1/partners
  * Get all partners user profile
- * Headers: Authorization: Bearer <token>
+ GET /api/v1/partners?search=&type=&status=&tier=&country=&page=&limit=&sort=&order=
  */
-router.get("/partners", authenticate, authorize('partner'), getAllPartners);
+router.get("/partners", authenticate, getAllPartners);
 
 
 

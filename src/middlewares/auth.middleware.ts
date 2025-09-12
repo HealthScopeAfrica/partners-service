@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import { verifyToken, extractTokenFromHeader, TokenPayload } from '../lib/jwt';
-import { isPartnerSuspended } from '../services/users/partner.service';
+import { isPartnerSuspended } from '../services/partner-auth.service';
 import { Types } from 'mongoose';
 
 /**

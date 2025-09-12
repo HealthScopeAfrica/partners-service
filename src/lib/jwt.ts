@@ -13,11 +13,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-in-pr
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '1h';
 
-// Token payload interface (partner-focused)
+// Token payload interfaces
 export interface TokenPayload {
   userId: string;
   email: string;
   role: 'partner'; // Only partner for now
+  iat?: number;
+  exp?: number;
+}
+
+// Generic temporary token payload
+export interface TemporaryTokenPayload {
+  userId: string;
+  email: string;
+  purpose: string; // e.g., 'password-reset', 'email-verification', etc.
   iat?: number;
   exp?: number;
 }
@@ -29,6 +38,43 @@ export const generateAccessToken = (payload: Omit<TokenPayload, 'iat' | 'exp'>):
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN
   } as jwt.SignOptions);
+};
+
+/**
+ * Generate stateless temporary token (JWT, short expiry, generic purpose)
+ */
+export const generateTemporaryToken = (
+  payload: Omit<TemporaryTokenPayload, 'iat' | 'exp'>,
+  expiresIn: string = '7m'
+): string => {
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn
+  } as jwt.SignOptions);
+};
+
+/**
+ * Verify temporary token and return payload, optionally check purpose
+ */
+export const verifyTemporaryToken = (
+  token: string,
+  expectedPurpose?: string
+): TemporaryTokenPayload => {
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as TemporaryTokenPayload;
+    if (expectedPurpose && decoded.purpose !== expectedPurpose) {
+  throw new Error('Invalid temporary token purpose');
+    }
+    return decoded;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new Error('Temporary token has expired');
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      throw new Error('Invalid temporary token');
+    } else {
+      throw new Error('Temporary token verification failed');
+    }
+  }
 };
 
 /**

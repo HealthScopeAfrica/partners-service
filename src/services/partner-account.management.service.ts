@@ -1,8 +1,8 @@
-import { PartnerProfileModel, type PartnerProfile } from "../../models/users/partner-profile.model";
-import { AccountModel, type Account } from "../../models/users/account.model";
+import { PartnerProfileModel, type PartnerProfile } from "../models/users/partner-profile.model";
+import { AccountModel, type Account } from "../models/users/account.model";
 import { Types } from "mongoose";
 import createHttpError from "http-errors";
-import { generatePartnerId, generateSecurePassword } from "../../lib/utils";
+import { generatePartnerId, generateSecurePassword } from "../lib/utils";
 import bcrypt from "bcrypt";
 
 // Create new partner in database (registration - creates pending PartnerProfile only)

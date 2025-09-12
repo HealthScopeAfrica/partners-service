@@ -1,4 +1,4 @@
-import { PartnerProfileModel } from "../../models/users/partner-profile.model";
+import { PartnerProfileModel } from "../models/users/partner-profile.model";
 
 // Search by organization name, type, email
 export function buildSearchQuery(search: string) {

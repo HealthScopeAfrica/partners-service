@@ -3,9 +3,12 @@ import {
   login,
   refreshToken,
   logout,
+  requestPasswordReset,
+ verifyPasswordResetToken,
+ setNewPasswordAfterReset
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validators/index";
-import { loginValidator, refreshTokenValidator } from "../middlewares/validators/auth.validation";
+import { loginValidator, refreshTokenValidator, requestPasswordResetValidator, setNewPasswordValidator } from "../middlewares/validators/auth.validation";
 import { authenticate, authorize, checkPartnerSuspension } from "../middlewares/auth.middleware";
 
 /**
@@ -38,5 +41,25 @@ router.post("/auth/refresh-token", refreshToken);
  */
 router.post("/auth/logout", authenticate,  logout);
 
+
+/**
+ * POST /api/v1/auth/reset-password/request
+ * Request password reset link
+ * Body: { identifier: string }
+ */
+router.post("/auth/reset-password/request", validate(requestPasswordResetValidator, "body"), requestPasswordReset);
+
+/**
+ * POST /api/v1/auth/reset-password/verify
+ * Verify password reset token and reset password
+ * Body: { identifier: string, newPassword: string }
+ */
+router.get("/auth/reset-password/verify", verifyPasswordResetToken);
+
+/** POST /api/v1/auth/reset-password
+ * Set new password after verifying reset token
+ * Body: { userId: string, email: string, newPassword: string }
+ */
+router.post("/auth/reset-password", validate(setNewPasswordValidator, "body"), setNewPasswordAfterReset);
 
 export default router;
