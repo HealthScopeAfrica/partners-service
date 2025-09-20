@@ -45,7 +45,7 @@ export const generateAccessToken = (payload: Omit<TokenPayload, 'iat' | 'exp'>):
  */
 export const generateTemporaryToken = (
   payload: Omit<TemporaryTokenPayload, 'iat' | 'exp'>,
-  expiresIn: string = '7m'
+  expiresIn: string = '5m'
 ): string => {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn

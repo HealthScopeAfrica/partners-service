@@ -228,7 +228,7 @@ export const requestPasswordReset = async (
       email,
       purpose: "password-reset",
     };
-    const token = generateTemporaryToken(TemporaryTokenPayload, "7m");
+    const token = generateTemporaryToken(TemporaryTokenPayload, "5m");
     const resetLink = `${
       process.env.PARTNER_FRONTEND_URL
     }/partner/reset-password/verify?token=${token}&email=${encodeURIComponent(
@@ -308,7 +308,7 @@ export const setNewPasswordAfterReset = async (
       throw createHttpError(400, 'Token, email, and new password are required');
     }
     const payload = verifyTemporaryToken(token, 'password-reset');
-    console.log(payload, "bbbbbb");
+  
     if (payload.email !== email) {
       throw createHttpError(401, 'Invalid or expired password reset link');
     }
