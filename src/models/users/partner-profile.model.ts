@@ -1,7 +1,8 @@
+import { boolean } from "joi";
 import { Schema, model, models, InferSchemaType } from "mongoose";
 
 const TIERS = ["standard", "featured"] as const;
-const PARTNER_STATUS = ["pending", "approved", "rejected"] as const;
+const PARTNER_STATUS = ["pending", "approved", "rejected",] as const;
 
 const PartnerProfileSchema = new Schema(
   {
@@ -33,6 +34,7 @@ const PartnerProfileSchema = new Schema(
     },
 
     tier: { type: String, enum: TIERS, default: "standard" },
+    isSuspended:{type:Boolean, default:false},
     status: {
       type: String,
       enum: PARTNER_STATUS,

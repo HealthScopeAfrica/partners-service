@@ -9,9 +9,12 @@ import helmet from "helmet";
 import compression from "compression";
 import errorHandler from "./middlewares/errorHandler";
 import connectDB from './config/db';
-
 import indexRouter from "./routes/index";
-import partnerRoutes from "./routes/users/partner.routes";
+import authRouter from "./routes/auth.routes";
+import partnerRoutes from "./routes/partner.routes";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
@@ -26,12 +29,12 @@ app.set("views", path.join(__dirname, "..", "views"));
 app.set("view engine", "ejs");
 
 // Middlewares
+app.use(cookieParser());
 app.use(helmet());
 app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(compression());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -39,10 +42,11 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.use("/api/v1/", indexRouter);
 //app.use("/api/v1/", readersRoutes);
 app.use("/api/v1", partnerRoutes);
+app.use("/api/v1", authRouter);
 
 // 404 handler
 app.use((_req, _res, next) => {
-	next(createError(404));
+	next(createError(404, `Resource ${_req.originalUrl} not found`));
 });
 
 app.use(errorHandler);
