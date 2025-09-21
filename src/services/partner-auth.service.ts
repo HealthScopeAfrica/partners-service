@@ -98,12 +98,28 @@ export const changePartnerPassword = async (identifier: string, currentPassword:
 
 
 // verify partner suspension status
+// export const isPartnerSuspended = async (identifier: string): Promise<boolean> => {
+//   const partner = await PartnerProfileModel.findOne({
+//     $or: [
+//       { "organization.email": identifier.toLowerCase() },
+//       { partnerId: identifier.toLowerCase() }
+//     ]
+//   });
+//   return partner?.isSuspended ?? false; 
+// };
+
 export const isPartnerSuspended = async (identifier: string): Promise<boolean> => {
-  const partner = await PartnerProfileModel.findOne({
+  // First, find the account by email or partnerId
+  const account = await AccountModel.findOne({
     $or: [
-      { "organization.email": identifier.toLowerCase() },
+      { email: identifier.toLowerCase() },
       { partnerId: identifier.toLowerCase() }
     ]
   });
-  return partner?.isSuspended ?? false; 
+  if (!account) {
+    return false; // Account not found
+  }
+    
+  // Return true if account.status is "disabled", else false
+  return account.status === "disabled";
 };
