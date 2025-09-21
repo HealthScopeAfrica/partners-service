@@ -52,9 +52,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
  * 2. AUTHORIZE: Restricts access by role
  * Usage: authorize('partner'), authorize('admin')
  */
-export function authorize(role: string) {
+export function authorize(role: string[] | string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || req.user.role !== role) {
+    if (!req.user || (Array.isArray(role) ? !role.includes(req.user.role) : req.user.role !== role)) {
       return res.status(403).json({ success: false, message: 'You do not have permission to perform this action' });
     }
     next();

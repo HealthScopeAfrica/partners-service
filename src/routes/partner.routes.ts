@@ -1,5 +1,5 @@
 import express from "express";
-import { approvePartner, createPartner, suspendPartner } from "../controllers/partner.controller";
+import { approvePartner, createPartner, editPartner, suspendPartner } from "../controllers/partner.controller";
 import { validate } from "../middlewares/validators/index";
 import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator, suspendReinstatePartnerQueryValidator, partnerIdentifierValidator } from "../middlewares/validators/partner.validation";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
@@ -46,6 +46,20 @@ router.get("/partner", authenticate, authorize('partner'), getCurrentPartner);
  */
 router.get("/partners", authenticate, getAllPartners);
 
+
+/**
+ * PATCH /api/v1/partner/
+ * Update/edit partner profile
+ * id is partner profile ID
+ */
+router.patch(
+  "/partner/:id/edit-profile",
+  validate(partnerProfileIdValidator, 'params'),
+  validate(createPartnerValidator),
+  authenticate,
+  authorize(['admin', 'partner']),
+  editPartner
+);
 
 
 

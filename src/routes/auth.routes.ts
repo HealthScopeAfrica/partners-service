@@ -4,13 +4,23 @@ import {
   refreshToken,
   logout,
   requestPasswordReset,
- verifyPasswordResetToken,
- setNewPasswordAfterReset,
- changePassword
+  verifyPasswordResetToken,
+  setNewPasswordAfterReset,
+  changePassword,
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validators/index";
-import { changePasswordValidator, loginValidator, refreshTokenValidator, requestPasswordResetValidator, setNewPasswordValidator } from "../middlewares/validators/auth.validation";
-import { authenticate, authorize, checkPartnerSuspension } from "../middlewares/auth.middleware";
+import {
+  changePasswordValidator,
+  loginValidator,
+  refreshTokenValidator,
+  requestPasswordResetValidator,
+  setNewPasswordValidator,
+} from "../middlewares/validators/auth.validation";
+import {
+  authenticate,
+  authorize,
+  checkPartnerSuspension,
+} from "../middlewares/auth.middleware";
 import { changePartnerPassword } from "../services/partner-auth.service";
 
 /**
@@ -41,15 +51,18 @@ router.post("/partner/auth/refresh-token", refreshToken);
  * Logout current user
  * Headers: Authorization: Bearer <token>
  */
-router.post("/partner/auth/logout", authenticate,  logout);
-
+router.post("/partner/auth/logout", authenticate, logout);
 
 /**
  * POST /api/v1/auth/reset-password/request
  * Request password reset link
  * Body: { identifier: string }
  */
-router.post("/partner/auth/reset-password/request", validate(requestPasswordResetValidator, "body"), requestPasswordReset);
+router.post(
+  "/partner/auth/reset-password/request",
+  validate(requestPasswordResetValidator, "body"),
+  requestPasswordReset
+);
 
 /**
  * POST /api/v1/auth/reset-password/verify
@@ -62,15 +75,22 @@ router.get("/partner/auth/reset-password/verify", verifyPasswordResetToken);
  * Set new password after verifying reset token
  * Body: { userId: string, email: string, newPassword: string }
  */
-router.patch("/partner/auth/reset-password", validate(setNewPasswordValidator, "body"), setNewPasswordAfterReset);
-
-
+router.patch(
+  "/partner/auth/reset-password",
+  validate(setNewPasswordValidator, "body"),
+  setNewPasswordAfterReset
+);
 
 /** PATCH /api/v1/partner/auth/change-password
  * Change password for partner
  * Body: {oldPassword: string, newPassword: string }
  */
-router.patch("/partner/auth/change-password", validate(changePasswordValidator, "body"), authenticate, changePassword);
+router.patch(
+  "/partner/auth/change-password",
+  validate(changePasswordValidator, "body"),
+  authenticate,
+  authorize("partner"),
+  changePassword
+);
 
-  
 export default router;

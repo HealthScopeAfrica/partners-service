@@ -110,8 +110,12 @@ export const getPartnerWithAccount = async (partnerId: Types.ObjectId): Promise<
 
 
 // Update a partner account
-export const updatePartnerAccount = async (id: Types.ObjectId, partnerData: Partial<PartnerProfile>): Promise<PartnerProfile | null> => {
-  return await PartnerProfileModel.findByIdAndUpdate(id, partnerData, { new: true });
+export const updatePartnerAccount = async (partnerProfileId:Types.ObjectId, partnerData: Partial<PartnerProfile>): Promise<PartnerProfile | null> => {
+  return await PartnerProfileModel.findByIdAndUpdate(
+    partnerProfileId,
+    partnerData,
+    { new: true }
+  ).lean<PartnerProfile>().exec();
 };
 
 
