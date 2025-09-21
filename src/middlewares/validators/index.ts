@@ -14,7 +14,7 @@ export const validate = (
 ) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const { error, value } = schema.validate(req[property], {
-      abortEarly: false, // Return all validation errors
+      abortEarly: true,
       stripUnknown: true, // Remove unknown fields
       allowUnknown: false, // Don't allow unknown fields
     });
@@ -24,7 +24,7 @@ export const validate = (
         .map((detail) => detail.message)
         .join(', ');
       
-      next(createHttpError(400, `Validation Error: ${errorMessage}`));
+      next(createHttpError(400, `${errorMessage}`));
       return;
     }
 

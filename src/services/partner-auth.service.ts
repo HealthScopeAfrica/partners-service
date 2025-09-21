@@ -9,6 +9,7 @@ export const authenticatePartner = async (
   password: string
 ): Promise<any> => {
   const account = await AccountModel.findOne({
+  
     $or: [
       { email: identifier.toLowerCase() },
       { partnerId: identifier.toLowerCase() },
@@ -16,18 +17,15 @@ export const authenticatePartner = async (
     role: "partner",
     status: "enabled",
   });
+    
   if (!account || !account.passwordHash) {
-    throw createHttpError(
-      404,
-      "Account not found please register as a partner"
-    );
+   console.error("Account not found or invalid credentials");
+   return null;
   }
   const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
   if (!isPasswordValid) {
-    throw createHttpError(
-      401,
-      "Invalid login parameters please check your credentials"
-    );
+    console.error("Invalid password for account:", identifier);
+    return null;
   }
   account.lastLoginAt = new Date();
   await account.save();
@@ -106,17 +104,20 @@ export const resetPartnerPassword = async (
 // change partner password
 export const changePartnerPassword = async (
   identifier: string,
-  currentPassword: string,
+  oldPassword: string,
   newPassword: string
-): Promise<boolean> => {
-  const account = await authenticatePartner(identifier, currentPassword);
+): Promise<{ success: boolean; partnerName: string }> => {
+ 
+  const account = await authenticatePartner(identifier, oldPassword);
   if (!account) {
-    return false;
+    return { success: false, partnerName: "" };
   }
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(newPassword, saltRounds);
   await AccountModel.findByIdAndUpdate((account as any)._id, { passwordHash });
-  return true;
+  const partnerName = await getPartnerName((account as any)._id);
+
+  return { success: true, partnerName };
 };
 
 // verify partner suspension status

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {
   authenticatePartner,
+  changePartnerPassword,
   isPartnerSuspended,
   manageTemporaryToken,
   resetPartnerPassword,
@@ -21,6 +22,7 @@ import { PartnerProfileModel } from "../models/users/partner-profile.model";
 import { passwordResetConfirmationMail } from "../emails/passwordResetConfirmationMail";
 import { generateSecurePassword, sendEmail } from "../lib/utils";
 import { passwordResetSuccessMail } from "../emails/passwordResetSuccessMail";
+import { findPartnerAccount } from "../services/partner-account.management.service";
 
 /**
  * AUTH CONTROLLER
@@ -356,6 +358,50 @@ export const setNewPasswordAfterReset = async (
       success: true,
       message:
         "Your password has been reset. You may now log in with your new password.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// change Password when logged in
+export const changePassword = async (
+  req: Request,
+  res: Response, 
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const {oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      throw createHttpError(400, "old password and new password are required");
+    }
+
+    const identifier = req.user?.email;
+    if (!identifier) {
+      throw createHttpError(401, "Unauthorized");
+    }
+
+    const result = await changePartnerPassword(identifier, oldPassword, newPassword);
+   
+    if (!result.success) {
+      throw createHttpError(400, "invalid old credentials");
+    }
+    
+    // Send confirmation email
+    const subject = "Your Password Has Been Changed";
+    const body = passwordResetSuccessMail(result?.partnerName);
+    const recipient = identifier;
+    try {
+      await sendEmail(subject, body, recipient);
+      console.info("Password reset email sent to:", recipient);
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
     });
   } catch (error) {
     next(error);

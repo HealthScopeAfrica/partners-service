@@ -39,11 +39,11 @@ export const refreshTokenValidator = Joi.object({
 
 // Change password validation
 export const changePasswordValidator = Joi.object({
-  currentPassword: Joi.string()
+  oldPassword: Joi.string()
     .required()
     .messages({
-      'any.required': 'Current password is required',
-      'string.empty': 'Current password cannot be empty'
+      'any.required': 'Old password is required',
+      'string.empty': 'Old password cannot be empty'
     }),
   
   newPassword: Joi.string()
@@ -54,16 +54,8 @@ export const changePasswordValidator = Joi.object({
       'any.required': 'New password is required',
       'string.empty': 'New password cannot be empty',
       'string.min': 'New password must be at least 7 characters long',
-      'string.pattern.base': 'New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)'
+      'string.pattern.base': 'New password must include uppercase, lowercase, number, and special character',
     }),
-  
-  confirmPassword: Joi.string()
-    .valid(Joi.ref('newPassword'))
-    .required()
-    .messages({
-      'any.required': 'Password confirmation is required',
-      'any.only': 'Password confirmation must match new password'
-    })
 });
 
 // Reset password request validation

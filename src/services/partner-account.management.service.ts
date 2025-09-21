@@ -72,10 +72,6 @@ export const approvePartnerAccount = async (partnerProfileId: Types.ObjectId, de
 };
 
 
-// Suspend a partner account
-// export const suspendPartnerAccount = async (id: Types.ObjectId, suspend: boolean): Promise<PartnerProfile | null> => {
-//   return await PartnerProfileModel.findByIdAndUpdate(id, { isSuspended: suspend }, { new: true });
-// };
 
 export const suspendPartnerAccount = async (identifier: string, suspend: boolean): Promise<PartnerProfile | null> => {
   // Find the partner profile by email or partnerId
