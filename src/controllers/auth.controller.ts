@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
   authenticatePartner,
   isPartnerSuspended,
+  manageTemporaryToken,
   resetPartnerPassword,
   validatePartnerAccount,
 } from "../services/partner-auth.service";
@@ -212,7 +213,7 @@ export const requestPasswordReset = async (
     const data = await validatePartnerAccount(identifier);
     if (!data) {
       console.info(
-        "Password reset requested for non-existent account:",
+        "Password reset requested for non-existent or suspended account:",
         identifier
       );
       res.status(200).json({
@@ -229,6 +230,13 @@ export const requestPasswordReset = async (
       purpose: "password-reset",
     };
     const token = generateTemporaryToken(TemporaryTokenPayload, "5m");
+    if (!token) {
+      throw createHttpError(500, "Failed to generate password reset token");
+    }
+
+    // save token to db
+    await manageTemporaryToken(userId, "store", token);
+
     const resetLink = `${
       process.env.PARTNER_FRONTEND_URL
     }/partner/reset-password/verify?token=${token}&email=${encodeURIComponent(
@@ -236,12 +244,12 @@ export const requestPasswordReset = async (
     )}`;
     // Send password reset email
     const subject = "Password Reset Request Confirmation";
-    
+
     const recipient = email;
     const body = passwordResetConfirmationMail(
       partnerName,
       resetLink,
-      "7 minutes"
+      "5 minutes"
     );
     try {
       await sendEmail(subject, body, recipient);
@@ -259,7 +267,6 @@ export const requestPasswordReset = async (
   }
 };
 
-
 /**
  * Verify password reset token and email match
  * GET /api/v1/auth/password-reset/verify?token=...&email=...
@@ -271,26 +278,30 @@ export const verifyPasswordResetToken = async (
 ): Promise<void> => {
   try {
     const { token, email } = req.query;
-    if (!token || !email || typeof token !== 'string' || typeof email !== 'string') {
-      throw createHttpError(400, 'Token and email are required');
+    if (
+      !token ||
+      !email ||
+      typeof token !== "string" ||
+      typeof email !== "string"
+    ) {
+      throw createHttpError(400, "Token and email are required");
     }
 
-    const payload = verifyTemporaryToken(token, 'password-reset');
+    const payload = verifyTemporaryToken(token, "password-reset");
 
     if (payload.email !== email) {
-      throw createHttpError(401, 'Invalid or expired password reset link');
+      throw createHttpError(401, "Invalid or expired password reset link");
     }
 
     res.status(200).json({
       success: true,
-      message: 'Token and email verified. You may now set a new password.'
+      message:
+        "Password reset link verified successfully. You may now set a new password.",
     });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 /**
  * Set new password after verifying token and email
@@ -305,27 +316,47 @@ export const setNewPasswordAfterReset = async (
   try {
     const { token, email, newPassword } = req.body;
     if (!token || !email || !newPassword) {
-      throw createHttpError(400, 'Token, email, and new password are required');
+      throw createHttpError(400, "Token, email, and new password are required");
     }
-    const payload = verifyTemporaryToken(token, 'password-reset');
-  
+    const payload = verifyTemporaryToken(token, "password-reset");
+
     if (payload.email !== email) {
-      throw createHttpError(401, 'Invalid or expired password reset link');
+      throw createHttpError(401, "Invalid or expired password reset link");
     }
-    const result = await resetPartnerPassword(payload.userId, email, newPassword);
+    const isTempTokenAlreadyUsed = await manageTemporaryToken(
+      payload.userId,
+      "verify",
+      token
+    );
+    if (isTempTokenAlreadyUsed === false) {
+      throw createHttpError(
+        401,
+        "Oops! This password reset link has already been used. Please request a new one."
+      );
+    }
+    const result = await resetPartnerPassword(
+      payload.userId,
+      email,
+      newPassword
+    );
     if (!result) {
-      throw createHttpError(404, 'Account not found');
+      throw createHttpError(404, "Account not found");
     }
     // Send confirmation email
-    const subject = 'Your Password Has Been Reset';
-    const body = passwordResetSuccessMail(result.partnerName, result.newPassword);
+    const subject = "Your Password Has Been Reset";
+    const body = passwordResetSuccessMail(result.partnerName);
     try {
       await sendEmail(subject, body, email);
       console.info("Password reset email sent to:", email);
     } catch (error) {
       console.error("Error sending password reset email:", error);
     }
-    res.status(200).json({ success: true, message: 'Your password has been reset. You may now log in with your new password.' });
+    await manageTemporaryToken(payload.userId, "clear");
+    res.status(200).json({
+      success: true,
+      message:
+        "Your password has been reset. You may now log in with your new password.",
+    });
   } catch (error) {
     next(error);
   }

@@ -25,21 +25,21 @@ const router = Router();
  * Login for all user types (partner, admin, contributor, reader)
  * Body: { identifier: string, password: string }
  */
-router.post("/auth/login", validate(loginValidator, "body"), login);
+router.post("/auth/partner/login", validate(loginValidator, "body"), login);
 
 /**
  * POST /api/v1/auth/refresh
  * Refresh access token using refresh token from cookie
  * No body validation needed - token comes from HTTP-only cookie
  */
-router.post("/auth/refresh-token", refreshToken);
+router.post("/auth/partner/refresh-token", refreshToken);
 
 /**
  * POST /api/v1/auth/logout
  * Logout current user
  * Headers: Authorization: Bearer <token>
  */
-router.post("/auth/logout", authenticate,  logout);
+router.post("/auth/partner/logout", authenticate,  logout);
 
 
 /**
@@ -47,19 +47,19 @@ router.post("/auth/logout", authenticate,  logout);
  * Request password reset link
  * Body: { identifier: string }
  */
-router.post("/auth/reset-password/request", validate(requestPasswordResetValidator, "body"), requestPasswordReset);
+router.post("/auth/partner/reset-password/request", validate(requestPasswordResetValidator, "body"), requestPasswordReset);
 
 /**
  * POST /api/v1/auth/reset-password/verify
  * Verify password reset token and reset password
  * Body: { identifier: string, newPassword: string }
  */
-router.get("/auth/reset-password/verify", verifyPasswordResetToken);
+router.get("/auth/partner/reset-password/verify", verifyPasswordResetToken);
 
 /** POST /api/v1/auth/reset-password
  * Set new password after verifying reset token
  * Body: { userId: string, email: string, newPassword: string }
  */
-router.post("/auth/reset-password", validate(setNewPasswordValidator, "body"), setNewPasswordAfterReset);
+router.post("/auth/partner/reset-password", validate(setNewPasswordValidator, "body"), setNewPasswordAfterReset);
 
 export default router;

@@ -126,6 +126,21 @@ export const partnerProfileIdValidator = Joi.object({
   })
 });
 
+export const partnerIdentifierValidator = Joi.object({
+  identifier: Joi.alternatives().try(
+    Joi.string().email().lowercase().messages({
+      'string.email': 'Identifier must be a valid email address',
+    }),
+    Joi.string().pattern(/^PTR-[A-Z0-9]{12}$/).messages({
+      'string.pattern.base': 'Identifier must be a valid Partner ID (PTR-XXXXXXXXXXXX)',
+    })
+  ).required().messages({
+    'any.required': 'Identifier (Email or Partner ID) is required',
+    'string.empty': 'Identifier (Email or Partner ID) cannot be empty',
+    'alternatives.match': 'Identifier must be a valid email address or Partner ID (PTR-XXXXXXXXXXXX)',
+  })
+});
+
 /**
  * Suspend partner query parameter validation
  */

@@ -4,35 +4,42 @@ import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
 
 // verify partner credentials
-export const authenticatePartner = async (identifier: string, password: string): Promise<any> => {
+export const authenticatePartner = async (
+  identifier: string,
+  password: string
+): Promise<any> => {
   const account = await AccountModel.findOne({
     $or: [
       { email: identifier.toLowerCase() },
-      { partnerId: identifier.toLowerCase() }
+      { partnerId: identifier.toLowerCase() },
     ],
-    role: 'partner',
-    status: 'enabled'
+    role: "partner",
+    status: "enabled",
   });
   if (!account || !account.passwordHash) {
-    throw createHttpError(404, 'Account not found please register as a partner');
+    throw createHttpError(
+      404,
+      "Account not found please register as a partner"
+    );
   }
   const isPasswordValid = await bcrypt.compare(password, account.passwordHash);
   if (!isPasswordValid) {
-    throw createHttpError(401, 'Invalid login parameters please check your credentials');
+    throw createHttpError(
+      401,
+      "Invalid login parameters please check your credentials"
+    );
   }
   account.lastLoginAt = new Date();
   await account.save();
   return account;
 };
 
-
 //get partner name from partner profile
 const getPartnerName = async (accountId: string): Promise<string> => {
-   const profile = await PartnerProfileModel.findOne({ accountId: accountId });
-  const partnerName = profile?.organization?.name ?? 'Partner';
+  const profile = await PartnerProfileModel.findOne({ accountId: accountId });
+  const partnerName = profile?.organization?.name ?? "Partner";
   return partnerName;
 };
-
 
 // Verify password reset request: check account exists and return info for token generation
 export const validatePartnerAccount = async (
@@ -41,10 +48,10 @@ export const validatePartnerAccount = async (
   const account = await AccountModel.findOne({
     $or: [
       { email: identifier.toLowerCase() },
-      { partnerId: identifier.toLowerCase() }
+      { partnerId: identifier.toLowerCase() },
     ],
-    role: 'partner',
-    status: 'enabled'
+    role: "partner",
+    status: "enabled",
   });
 
   if (!account) {
@@ -56,36 +63,52 @@ export const validatePartnerAccount = async (
   return {
     userId: account._id.toString(),
     email: account.email,
-    partnerName
+    partnerName,
   };
 };
-
-
-
 
 // Reset partner password using userId and email (extra validation)
 export const resetPartnerPassword = async (
   userId: string,
   email: string,
   newPassword: string
-): Promise<{ account: any; newPassword: string; partnerName: string } | null> => {
+): Promise<{ account: any; partnerName: string } | null> => {
   const account = await AccountModel.findOne({ _id: userId, email });
   if (!account) {
     return null;
   }
+
+  // Check old password
+  const isSame = await bcrypt.compare(newPassword, account.passwordHash);
+  if (isSame) {
+    throw createHttpError(
+      400,
+      "New password must be different from the old password"
+    );
+  }
+
+  // Hash new password
   const saltRounds = 12;
   const passwordHash = await bcrypt.hash(newPassword, saltRounds);
-  const updatedAccount = await AccountModel.findByIdAndUpdate(account._id, { passwordHash }, { new: true });
+
+  // Update and return
+  const updatedAccount = await AccountModel.findByIdAndUpdate(
+    account._id,
+    { passwordHash },
+    { new: true }
+  );
+
   const partnerName = await getPartnerName(account._id.toString());
-  return { account: updatedAccount, newPassword, partnerName };
+
+  return { account: updatedAccount, partnerName };
 };
 
-
-
-
-
 // change partner password
-export const changePartnerPassword = async (identifier: string, currentPassword: string, newPassword: string): Promise<boolean> => {
+export const changePartnerPassword = async (
+  identifier: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<boolean> => {
   const account = await authenticatePartner(identifier, currentPassword);
   if (!account) {
     return false;
@@ -96,30 +119,53 @@ export const changePartnerPassword = async (identifier: string, currentPassword:
   return true;
 };
 
-
 // verify partner suspension status
-// export const isPartnerSuspended = async (identifier: string): Promise<boolean> => {
-//   const partner = await PartnerProfileModel.findOne({
-//     $or: [
-//       { "organization.email": identifier.toLowerCase() },
-//       { partnerId: identifier.toLowerCase() }
-//     ]
-//   });
-//   return partner?.isSuspended ?? false; 
-// };
-
-export const isPartnerSuspended = async (identifier: string): Promise<boolean> => {
+export const isPartnerSuspended = async (
+  identifier: string
+): Promise<boolean> => {
   // First, find the account by email or partnerId
   const account = await AccountModel.findOne({
     $or: [
       { email: identifier.toLowerCase() },
-      { partnerId: identifier.toLowerCase() }
-    ]
+      { partnerId: identifier.toLowerCase() },
+    ],
   });
   if (!account) {
     return false; // Account not found
   }
-    
+
   // Return true if account.status is "disabled", else false
   return account.status === "disabled";
+};
+
+// manage tempToken
+export const manageTemporaryToken = async (
+  userId: string,
+  action: "store" | "verify" | "clear",
+  tempToken?: string
+): Promise<boolean> => {
+  if ((action === "store" || action === "verify") && !tempToken) {
+    throw new Error("tempToken is required for store/verify");
+  }
+
+  switch (action) {
+    case "store": {
+      const hashedToken = await bcrypt.hash(tempToken!, 10);
+      await AccountModel.findByIdAndUpdate(userId, { tempToken: hashedToken });
+      return true;
+    }
+
+    case "verify": {
+      const account = await AccountModel.findById(userId).select("tempToken");
+      if (!account?.tempToken) return false;
+      return await bcrypt.compare(tempToken!, account.tempToken);
+    }
+
+    case "clear": {
+      await AccountModel.findByIdAndUpdate(userId, {
+        $unset: { tempToken: "" },
+      });
+      return true;
+    }
+  }
 };

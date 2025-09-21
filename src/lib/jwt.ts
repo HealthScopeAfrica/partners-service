@@ -63,16 +63,16 @@ export const verifyTemporaryToken = (
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as TemporaryTokenPayload;
     if (expectedPurpose && decoded.purpose !== expectedPurpose) {
-  throw new Error('Invalid temporary token purpose');
+  throw new Error('Invalid temp token purpose');
     }
     return decoded;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Temporary token has expired');
+      throw new Error('invalid or expired temp token');
     } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new Error('Invalid temporary token');
+      throw new Error('Invalid temp token');
     } else {
-      throw new Error('Temporary token verification failed');
+      throw new Error('Temp token verification failed');
     }
   }
 };

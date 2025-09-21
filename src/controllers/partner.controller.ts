@@ -91,14 +91,14 @@ export const approvePartner = async (req: Request, res: Response, next: NextFunc
  */
 export const suspendPartner = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const identifier = (req.params.id) as string;
+    const identifier = (req.params.identifier) as string;
     const suspend = req.query.suspend === 'true'; // convert string to boolean
    const result =  await suspendPartnerAccount(identifier, suspend);
    if (!result) {
      res.status(404).json({ success: false, message: 'Partner not found' });
      return;
    }
-    res.status(200).json({ success: true, message: suspend ? 'Partner account suspended successfully' : 'Partner account reinstated successfully' });
+    res.status(200).json({ success: true, message: suspend ? 'Partner account suspended successfully' : 'Partner account reinstated successfully', data: result });
   } catch (error) {
     next(error);
   }

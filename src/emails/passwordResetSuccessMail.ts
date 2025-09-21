@@ -1,7 +1,7 @@
 // passwordResetSuccessMail.ts
 // Generates the HTML for password reset success email
 
-export function passwordResetSuccessMail(partnerName: string, newPassword: string): string {
+export function passwordResetSuccessMail(partnerName: string): string {
   return `
   <body style="font-family: 'Segoe UI', Arial, sans-serif; background: #f5fff9; color: #222; margin: 0; padding: 0;">
   <div style="max-width: 420px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #eee; padding: 32px;">

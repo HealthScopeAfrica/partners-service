@@ -34,7 +34,10 @@ const AccountSchema = new Schema(
       index: true,
     },
     lastLoginAt: { type: Date },
+     // For password reset
+    tempToken: { type: String, default: null }, // store hash of the reset token
   },
+  
   { timestamps: true, versionKey: false }
 );
 
