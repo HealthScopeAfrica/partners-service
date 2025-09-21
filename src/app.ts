@@ -46,7 +46,7 @@ app.use("/api/v1", authRouter);
 
 // 404 handler
 app.use((_req, _res, next) => {
-	next(createError(404));
+	next(createError(404, `Resource ${_req.originalUrl} not found`));
 });
 
 app.use(errorHandler);
