@@ -1,5 +1,5 @@
 import express from "express";
-import { approvePartner, createPartner, editPartner, suspendPartner } from "../controllers/partner.controller";
+import { approvePartner, createPartner, deletePartner, editPartner, suspendPartner } from "../controllers/partner.controller";
 import { validate } from "../middlewares/validators/index";
 import { partnerProfileIdValidator, approvePartnerQueryValidator, createPartnerValidator, suspendReinstatePartnerQueryValidator, partnerIdentifierValidator } from "../middlewares/validators/partner.validation";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
@@ -62,5 +62,14 @@ router.patch(
 );
 
 
+/** * DELETE /api/v1/partner/:id
+ * Delete a partner account by partner profile ID
+ */
+router.delete("/partner/:id", 
+  validate(partnerProfileIdValidator, 'params'),
+  // authenticate,
+  // authorize(['partner']),
+  deletePartner
+);
 
 export default router;

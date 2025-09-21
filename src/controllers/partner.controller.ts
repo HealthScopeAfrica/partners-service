@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import {
   approvePartnerAccount,
   createPartnerAccount,
+  deletePartnerAccount,
   findPartnerByEmail,
   suspendPartnerAccount,
   updatePartnerAccount,
@@ -265,6 +266,32 @@ export const editPartner = async (
         message: "Partner profile updated successfully",
         data: result,
       });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const deletePartner = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const partnerProfileId = req.params.id as unknown as Types.ObjectId;
+    const result = await deletePartnerAccount(partnerProfileId);
+    if (!result) {
+      res.status(404).json({ success: false, message: "Partner not found" });
+      return;
+    }
+    res.status(200).json({
+  success: true,
+  message: result.organization?.name
+    ? `${result.organization.name} deleted successfully`
+    : "Partner deleted successfully",
+  data: { id: result._id, name: result.organization?.name }
+});
+
   } catch (error) {
     next(error);
   }
