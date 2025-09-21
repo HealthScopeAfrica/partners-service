@@ -128,10 +128,10 @@ export const partnerProfileIdValidator = Joi.object({
 
 export const partnerIdentifierValidator = Joi.object({
   identifier: Joi.alternatives().try(
-    Joi.string().email().lowercase().messages({
+    Joi.string().email().trim().messages({
       'string.email': 'Identifier must be a valid email address',
     }),
-    Joi.string().pattern(/^PTR-[A-Z0-9]{12}$/).messages({
+    Joi.string().pattern(/^PTR-[A-Z0-9]{11}$/i).trim().messages({
       'string.pattern.base': 'Identifier must be a valid Partner ID (PTR-XXXXXXXXXXXX)',
     })
   ).required().messages({

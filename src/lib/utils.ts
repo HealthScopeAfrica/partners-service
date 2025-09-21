@@ -27,7 +27,7 @@ import createHttpError from "http-errors";
  */
 export const generatePartnerId = async (): Promise<string> => {
   // Use timestamp + random for guaranteed uniqueness
-  const timestamp = Date.now().toString(36); // Base36 timestamp
+  const timestamp = Date.now().toString(36).slice(-8); // Base36 timestamp - take last 8 chars
   const random = Math.random().toString(36).substring(2, 5); // 3 random chars
   const partnerId = `PTR-${timestamp}${random}`.toUpperCase();
 
